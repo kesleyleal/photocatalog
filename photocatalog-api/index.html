@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Peças - Login</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilo do loader (spinner) */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #FF6750; /* Cor primária */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<!-- ATUALIZAÇÃO: Fundo da página com cor clara do tema -->
+<body class="bg-[#e5e4e4]" style="font-family: Arial, sans-serif;">
+
+    <!-- Wrapper Principal -->
+    <div class="container mx-auto p-4 max-w-4xl mt-10">
+
+        <!-- Logo (com cor de fundo escura do tema) -->
+        <div class="text-center mb-6">
+            <img src="./img/homedtr.png" alt="Logo" class="mx-auto rounded-md">
+        </div>
+
+        <!-- 1. Seção de Login (Inicial) -->
+        <section id="login-section" class="bg-white p-8 rounded-lg shadow-xl max-w-md mx-auto">
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Acesso ao Catálogo</h1>
+            
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700">Usuário</label>
+                    <input type="text" id="username" name="username" required
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF6750] focus:border-[#FF6750]">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="password" name="password" required
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF6750] focus:border-[#FF6750]">
+                </div>
+                
+                <!-- ATUALIZAÇÃO: Botão com cor primária -->
+                <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FF6750] hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF6750]">
+                    Entrar
+                </button>
+            </form>
+            
+            <div id="login-error" class="mt-4 text-center text-sm text-red-600"></div>
+        </section>
+
+        <!-- 2. Seção do Catálogo (Escondida) -->
+        <section id="catalog-section" class="hidden">
+            
+            <!-- Header do Catálogo (Boas-vindas e Botões) -->
+            <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-xl">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Catálogo de Peças</h1>
+                    <p id="welcome-message" class="text-sm text-gray-600">Bem-vindo!</p>
+                </div>
+                <div>
+                    <!-- ATUALIZAÇÃO: Links com cor primária -->
+                    <button id="open-password-modal-btn"
+                        class="text-sm text-[#FF6750] hover:text-opacity-80 font-medium mr-4">
+                        Mudar Senha
+                    </button>
+                    <button id="logout-button"
+                        class="text-sm text-red-600 hover:text-red-800 font-medium">
+                        Sair
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulário de Busca -->
+            <form id="search-form" class="bg-white p-6 rounded-lg shadow-xl mb-6">
+                <label for="cod_peca" class="block text-sm font-medium text-gray-700">Buscar Código da Interno Peça</label>
+                <div class="mt-1 flex rounded-md shadow-sm">
+                    
+                    <!-- ATUALIZAÇÃO: Input conectado ao <datalist> -->
+                    <input type="text" id="cod_peca" name="cod_peca" required
+                        class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-[#FF6750] focus:border-[#FF6750]"
+                        placeholder="Digite o código (ex: 005489)"
+                        list="part-codes-list"> <!-- Conecta ao datalist -->
+
+                    <!-- ATUALIZAÇÃO: Botão com cor primária -->
+                    <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-l-0 border-[#FF6750] rounded-r-md bg-[#FF6750] text-white font-medium hover:bg-opacity-80">
+                        Buscar
+                    </button>
+                </div>
+                <div id="search-message" class="mt-3 text-sm"></div>
+                
+                <!-- NOVO: Datalist para Autocomplete -->
+                <!-- Será populado pelo JavaScript após o login -->
+                <datalist id="part-codes-list">
+                    <!-- <option value="005489"></option> -->
+                    <!-- <option value="005490"></option> -->
+                </datalist>
+
+            </form>
+
+            <!-- Galeria de Resultados -->
+            <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- As imagens aparecerão aqui -->
+            </div>
+
+            <!-- Loader (Spinner) -->
+            <div id="loader" class="loader hidden"></div>
+        </section>
+
+    </div> <!-- Fim do Wrapper Principal -->
+
+    <!-- 3. Modal de Mudar Senha (Escondido) -->
+    <div id="password-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full m-4">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Mudar Senha</h2>
+            <form id="password-change-form">
+                <div class="mb-4">
+                    <label for="old-password" class="block text-sm font-medium text-gray-700">Senha Antiga</label>
+                    <input type="password" id="old-password" required
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF6750] focus:border-[#FF6750]">
+                </div>
+                <div class="mb-6">
+                    <label for="new-password" class="block text-sm font-medium text-gray-700">Nova Senha</label>
+                    <input type="password" id="new-password" required
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF6750] focus:border-[#FF6750]">
+                </div>
+                
+                <div id="password-message" class="mt-4 text-center text-sm mb-4"></div>
+
+                <div class="flex justify-end gap-4">
+                    <button type="button" id="close-password-modal-btn"
+                        class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                        Cancelar
+                    </button>
+                    <!-- ATUALIZAÇÃO: Botão com cor primária -->
+                    <button type="submit"
+                        class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FF6750] hover:bg-opacity-80 focus:outline-none">
+                        Salvar Nova Senha
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Modal de Visualização de Imagem (Escondido) -->
+    <div id="image-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+        <button id="image-modal-close" class="absolute top-4 right-4 text-white text-4xl font-bold hover:text-gray-300">&times;</button>
+        <img id="modal-image" src="" alt="Visualização da Peça" class="max-w-full max-h-full rounded-md">
+    </div>
+
+
+    <!-- 5. Lógica JavaScript do Frontend -->
+    <script>
+        // --- Configuração ---
+        // ATENÇÃO: Mude esta URL para o seu IP público ou domínio (ex: https://api-catalogo.seusite.com.br)
+        const API_URL = 'http://localhost:3000'; 
+        let userToken = null; 
+
+        // --- Seletores de DOM ---
+        const loginSection = document.getElementById('login-section');
+        const catalogSection = document.getElementById('catalog-section');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const logoutButton = document.getElementById('logout-button');
+        
+        const searchForm = document.getElementById('search-form');
+        const codPecaInput = document.getElementById('cod_peca');
+        const searchMessage = document.getElementById('search-message');
+        const gallery = document.getElementById('gallery');
+        const loader = document.getElementById('loader');
+
+        // NOVO: Seletor do Datalist
+        const partCodesList = document.getElementById('part-codes-list');
+
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const imageModalClose = document.getElementById('image-modal-close');
+
+        const passwordModal = document.getElementById('password-modal');
+        const openPasswordModalBtn = document.getElementById('open-password-modal-btn');
+        const closePasswordModalBtn = document.getElementById('close-password-modal-btn');
+        const passwordChangeForm = document.getElementById('password-change-form');
+        const passwordMessage = document.getElementById('password-message');
+
+        // --- Funções de UI ---
+
+        function showLogin() {
+            loginSection.classList.remove('hidden');
+            catalogSection.classList.add('hidden');
+            userToken = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            // Limpa o autocomplete ao sair
+            if (partCodesList) partCodesList.innerHTML = '';
+        }
+
+        async function showCatalog() {
+            loginSection.classList.add('hidden');
+            catalogSection.classList.remove('hidden');
+            welcomeMessage.textContent = `Bem-vindo, ${localStorage.getItem('username') || 'Representante'}!`;
+            
+            // NOVO: Popula o autocomplete assim que o usuário loga
+            await populateDatalist();
+        }
+
+        function clearGallery(message = '', isError = false) {
+            gallery.innerHTML = '';
+            searchMessage.textContent = message;
+            searchMessage.style.color = isError ? 'red' : 'green';
+        }
+
+        function openImageModal(src) {
+            modalImage.src = src;
+            imageModal.classList.remove('hidden');
+        }
+
+        imageModalClose.onclick = () => imageModal.classList.add('hidden');
+        imageModal.onclick = (e) => {
+            if (e.target === imageModal) {
+                imageModal.classList.add('hidden');
+            }
+        };
+
+        function openPasswordModal() {
+            passwordModal.classList.remove('hidden');
+            passwordMessage.textContent = '';
+            passwordChangeForm.reset();
+        }
+        function closePasswordModal() {
+            passwordModal.classList.add('hidden');
+        }
+
+        // --- Lógica da API ---
+
+        /**
+         * 1. LOGIN
+         */
+        async function handleLogin(event) {
+            event.preventDefault();
+            loginError.textContent = '';
+            
+            const username = loginForm.username.value;
+            const password = loginForm.password.value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario: username, senha: password })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Erro desconhecido');
+
+                userToken = data.token;
+                localStorage.setItem('authToken', userToken);
+                localStorage.setItem('username', username); 
+                await showCatalog(); // Chama o showCatalog (que agora é async)
+
+            } catch (error) {
+                console.error('Falha no login:', error);
+                loginError.textContent = `Falha no login: ${error.message}. Verifique o backend.`;
+            }
+        }
+
+        /**
+         * 2. LOGOUT
+         */
+        logoutButton.onclick = () => {
+            if (confirm('Tem certeza que deseja sair?')) {
+                showLogin();
+            }
+        };
+
+        /**
+         * NOVO: Popula o Datalist (Autocomplete)
+         */
+        async function populateDatalist() {
+            if (!userToken || !partCodesList) return;
+            
+            // Se já foi populado, não faz de novo
+            if (partCodesList.options.length > 0) return; 
+
+            console.log('Buscando lista completa de peças para autocomplete...');
+            try {
+                const response = await fetch(`${API_URL}/api/catalog/all`, {
+                    headers: { 'Authorization': `Bearer ${userToken}` }
+                });
+                if (!response.ok) throw new Error('Falha ao carregar lista de peças');
+
+                const codes = await response.json(); // Espera um array: ['001', '002']
+                
+                partCodesList.innerHTML = ''; // Limpa
+                codes.forEach(code => {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    partCodesList.appendChild(option);
+                });
+                console.log(`Autocomplete populado com ${codes.length} códigos.`);
+
+            } catch (error) {
+                console.error('Erro ao popular autocomplete:', error);
+                // Não é um erro fatal, o usuário ainda pode digitar manualmente
+            }
+        }
+
+
+        /**
+         * 3. BUSCA DE PEÇAS
+         */
+        async function handleSearch(event) {
+            event.preventDefault();
+            clearGallery();
+            loader.classList.remove('hidden');
+
+            const cod_peca = codPecaInput.value;
+            if (!userToken) {
+                alert('Sessão expirada. Faça login novamente.');
+                showLogin();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/search?cod_peca=${cod_peca}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`
+                    }
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || `Erro ${response.status}`);
+
+                renderPhotos(data.fotos, cod_peca);
+
+            } catch (error) {
+                console.error('Falha na busca:', error);
+                clearGallery(`Erro ao buscar peça: ${error.message}`, true);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        /**
+         * 4. RENDERIZAR FOTOS
+         */
+        function renderPhotos(fotos, cod_peca) {
+            if (fotos.length === 0) {
+                clearGallery(`Nenhuma foto encontrada para o código ${cod_peca}.`, true);
+                return;
+            }
+
+            searchMessage.textContent = `Exibindo ${fotos.length} fotos para ${cod_peca}.`;
+            searchMessage.style.color = 'green';
+
+            fotos.forEach(foto => {
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'bg-gray-200 rounded-lg overflow-hidden shadow-md aspect-square';
+
+                const imageUrl = `${API_URL}${foto.url}?token=${userToken}`;
+
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = foto.filename;
+                img.className = 'w-full h-full object-cover cursor-pointer transition-transform duration-200 hover:scale-105';
+                
+                img.onerror = () => {
+                    img.alt = 'Imagem indisponível';
+                    img.src = 'https://placehold.co/300x300/e0e0e0/909090?text=Indisponivel';
+                    img.style.cursor = 'not-allowed';
+                };
+
+                img.onclick = () => openImageModal(imageUrl);
+
+                imgContainer.appendChild(img);
+                gallery.appendChild(imgContainer);
+            });
+        }
+
+        /**
+         * 5. MUDAR SENHA
+         */
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            passwordMessage.textContent = '';
+            
+            const senhaAntiga = document.getElementById('old-password').value;
+            const novaSenha = document.getElementById('new-password').value;
+
+            if (!userToken) {
+                alert('Sessão expirada. Faça login novamente.');
+                closePasswordModal();
+                showLogin();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${userToken}`
+                    },
+                    body: JSON.stringify({ senhaAntiga, novaSenha })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Erro desconhecido');
+
+                passwordMessage.style.color = 'green';
+                passwordMessage.textContent = data.message;
+                setTimeout(() => {
+                    closePasswordModal();
+                }, 2000);
+
+            } catch (error) {
+                console.error('Falha ao mudar senha:', error);
+                passwordMessage.style.color = 'red';
+                passwordMessage.textContent = `Falha: ${error.message}`;
+            }
+        }
+
+
+        // --- Event Listeners (Gatilhos) ---
+        loginForm.addEventListener('submit', handleLogin);
+        searchForm.addEventListener('submit', handleSearch);
+        
+        openPasswordModalBtn.addEventListener('click', openPasswordModal);
+        closePasswordModalBtn.addEventListener('click', closePasswordModal);
+        passwordChangeForm.addEventListener('submit', handleChangePassword);
+
+        // --- Inicialização ---
+        (async () => {
+            const storedToken = localStorage.getItem('authToken');
+            if (storedToken) {
+                userToken = storedToken;
+                await showCatalog(); // Espera o showCatalog (e o populateDatalist) terminar
+            } else {
+                showLogin();
+            }
+        })();
+
+    </script>
+</body>
+</html>
